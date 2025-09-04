@@ -94,14 +94,15 @@ function createEmailContent(to: string, verificationLink: string, language: 'en'
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${verificationLink}" 
-                 style="background: linear-gradient(135deg, #fb923c, #f97316); 
-                        color: white; 
+                 style="background: #f97316; 
+                        color: white !important; 
                         padding: 15px 30px; 
                         text-decoration: none; 
                         border-radius: 50px; 
                         font-weight: bold; 
                         font-size: 16px;
-                        display: inline-block;">
+                        display: inline-block;
+                        border: 2px solid #f97316;">
                 Verify Email Address
               </a>
             </div>
@@ -139,14 +140,15 @@ function createEmailContent(to: string, verificationLink: string, language: 'en'
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${verificationLink}" 
-                 style="background: linear-gradient(135deg, #fb923c, #f97316); 
-                        color: white; 
+                 style="background: #f97316; 
+                        color: white !important; 
                         padding: 15px 30px; 
                         text-decoration: none; 
                         border-radius: 50px; 
                         font-weight: bold; 
                         font-size: 16px;
-                        display: inline-block;">
+                        display: inline-block;
+                        border: 2px solid #f97316;">
                 ელ.ფოსტის დადასტურება
               </a>
             </div>
@@ -212,14 +214,15 @@ export async function sendPasswordResetEmail(
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetLink}" 
-               style="background: linear-gradient(135deg, #fb923c, #f97316); 
-                      color: white; 
+               style="background: #f97316; 
+                      color: white !important; 
                       padding: 15px 30px; 
                       text-decoration: none; 
                       border-radius: 50px; 
                       font-weight: bold; 
                       font-size: 16px;
-                      display: inline-block;">
+                      display: inline-block;
+                      border: 2px solid #f97316;">
               პაროლის აღდგენა
             </a>
           </div>
@@ -256,14 +259,15 @@ export async function sendPasswordResetEmail(
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetLink}" 
-               style="background: linear-gradient(135deg, #fb923c, #f97316); 
-                      color: white; 
+               style="background: #f97316; 
+                      color: white !important; 
                       padding: 15px 30px; 
                       text-decoration: none; 
                       border-radius: 50px; 
                       font-weight: bold; 
                       font-size: 16px;
-                      display: inline-block;">
+                      display: inline-block;
+                      border: 2px solid #f97316;">
               Reset Password
             </a>
           </div>
