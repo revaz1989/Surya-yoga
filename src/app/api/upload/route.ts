@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // Create uploads directory if it doesn't exist
-    const baseUploadDir = process.env.UPLOAD_DIR || join(process.cwd(), 'public', 'uploads')
+    // Always use public/uploads regardless of environment
+    const baseUploadDir = join(process.cwd(), 'public', 'uploads')
     const newsDir = join(baseUploadDir, 'news')
     
     if (!existsSync(baseUploadDir)) {
@@ -84,11 +85,8 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(filepath, buffer)
 
-    // Return the public URL - in production use the full domain
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    const publicUrl = process.env.NODE_ENV === 'production' 
-      ? `${baseUrl}/uploads/news/${filename}`
-      : `/uploads/news/${filename}`
+    // Return the public URL - always use relative path so it works on any domain
+    const publicUrl = `/uploads/news/${filename}`
 
     return NextResponse.json({
       success: true,

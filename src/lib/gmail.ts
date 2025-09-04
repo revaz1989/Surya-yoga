@@ -189,7 +189,11 @@ export async function sendPasswordResetEmail(
       return false
     }
     
-    const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${resetToken}`
+    // Use production URL if NODE_ENV is production, otherwise use local
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://suryayoga.ge'
+      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const resetLink = `${baseUrl}/reset-password?token=${resetToken}`
     
     const subject = language === 'ge' 
       ? 'პაროლის აღდგენა - სურია იოგა'
@@ -344,7 +348,11 @@ export async function sendVerificationEmail(
       return false
     }
     
-    const verificationLink = `${process.env.NEXT_PUBLIC_BASE_URL}/api/verify-email?token=${verificationToken}`
+    // Use production URL if NODE_ENV is production, otherwise use local
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://suryayoga.ge'
+      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const verificationLink = `${baseUrl}/api/verify-email?token=${verificationToken}`
     
     const subject = language === 'ge' 
       ? 'დაადასტურეთ თქვენი სურია იოგას ანგარიში'
