@@ -24,11 +24,13 @@ export async function GET(request: NextRequest) {
     
     const reviews = getAllReviews()
     
-    // Only return pending reviews for admin approval
+    // Separate pending and approved reviews
     const pendingReviews = reviews.filter(review => review.is_approved === 0)
+    const approvedReviews = reviews.filter(review => review.is_approved === 1)
     
     return NextResponse.json({
-      reviews: pendingReviews,
+      pendingReviews,
+      approvedReviews,
       success: true
     })
   } catch (error) {
