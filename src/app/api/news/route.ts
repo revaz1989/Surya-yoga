@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getPublishedNewsPosts, getAllNewsPosts, createNewsPost, getUserById, getNewsPostsWithCommentCounts } from '@/lib/database'
 import { getSessionFromRequest } from '@/lib/auth'
 
@@ -21,7 +21,7 @@ export async function GET() {
 }
 
 // POST - Create new news post (admin only)
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = getSessionFromRequest(request)
     

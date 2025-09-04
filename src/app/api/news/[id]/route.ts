@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getNewsPostById, updateNewsPost, deleteNewsPost, toggleNewsPostPublication, getUserById } from '@/lib/database'
 import { getSessionFromRequest } from '@/lib/auth'
 
 // GET - Fetch single news post
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const postId = parseInt(id)
@@ -52,7 +52,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // PUT - Update news post (admin only)
-export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = getSessionFromRequest(request)
     
@@ -136,7 +136,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // DELETE - Delete news post (admin only)
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = getSessionFromRequest(request)
     

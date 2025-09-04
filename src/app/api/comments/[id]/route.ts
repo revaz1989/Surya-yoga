@@ -4,7 +4,7 @@ import { deleteNewsComment, getUserById } from '@/lib/database'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = getSessionFromRequest(request)
@@ -12,7 +12,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const commentId = parseInt(params.id)
+    const { id } = await params
+    const commentId = parseInt(id)
     if (isNaN(commentId)) {
       return NextResponse.json({ error: 'Invalid comment ID' }, { status: 400 })
     }

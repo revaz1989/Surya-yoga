@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getUserByEmail } from '@/lib/database'
 import { generateVerificationToken, sendPasswordResetEmail } from '@/lib/gmail'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { email, language } = await request.json()
 

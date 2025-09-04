@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getAllNewsPosts, toggleNewsPostPublication, getUserById } from '@/lib/database'
 import { getSessionFromRequest } from '@/lib/auth'
 
 // GET - Fetch all news posts for admin
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const session = getSessionFromRequest(request)
     
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 }
 
 // PATCH - Toggle publication status
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
     const session = getSessionFromRequest(request)
     

@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/gmail'
 import { getUserByEmail, updateUserPassword } from '@/lib/database'
 import bcrypt from 'bcryptjs'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { token, password, language } = await request.json()
 
