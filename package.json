@@ -10,7 +10,11 @@
     "seed": "node -r ts-node/register scripts/seed.js",
     "setup-gmail": "node scripts/setup-gmail-oauth.js",
     "health": "curl http://localhost:3000/api/health",
-    "production": "NODE_ENV=production npm run build && npm start"
+    "build:production": "node scripts/build-production.js",
+    "start:production": "node scripts/start-production.js",
+    "production": "npm run build:production && npm run start:production",
+    "migrate-uploads": "node scripts/migrate-uploads.js",
+    "test-media": "node scripts/test-media-serving.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -20,6 +24,7 @@
     "@types/nodemailer": "^7.0.1",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.2.0",
+    "dotenv": "^17.2.2",
     "googleapis": "^159.0.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.542.0",
@@ -36,6 +41,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

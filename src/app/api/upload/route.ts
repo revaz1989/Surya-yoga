@@ -64,8 +64,10 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // Create uploads directory if it doesn't exist
-    // Always use public/uploads regardless of environment
-    const baseUploadDir = join(process.cwd(), 'public', 'uploads')
+    // Use environment-specific upload directory
+    const baseUploadDir = process.env.UPLOAD_DIR 
+      ? process.env.UPLOAD_DIR
+      : join(process.cwd(), 'public', 'uploads')
     const newsDir = join(baseUploadDir, 'news')
     
     if (!existsSync(baseUploadDir)) {
@@ -85,8 +87,8 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(filepath, buffer)
 
-    // Return the public URL - always use relative path so it works on any domain
-    const publicUrl = `/uploads/news/${filename}`
+    // Return the API URL for serving the media file
+    const publicUrl = `/api/media/news/${filename}`
 
     return NextResponse.json({
       success: true,

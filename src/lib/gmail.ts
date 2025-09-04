@@ -3,6 +3,35 @@ import jwt from 'jsonwebtoken'
 
 console.log('Gmail module loading...')
 
+// Helper function to get the correct base URL for emails
+function getBaseUrl(): string {
+  console.log('Getting base URL for email links:', {
+    NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL
+  })
+  
+  // In production, always use suryayoga.ge
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Using production URL: https://suryayoga.ge')
+    return 'https://suryayoga.ge'
+  }
+  
+  // In development or if NEXT_PUBLIC_BASE_URL is explicitly set
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    // If it's set to suryayoga.ge, use it (for production builds)
+    if (process.env.NEXT_PUBLIC_BASE_URL.includes('suryayoga.ge')) {
+      console.log('NEXT_PUBLIC_BASE_URL contains suryayoga.ge, using https://suryayoga.ge')
+      return 'https://suryayoga.ge'
+    }
+    console.log('Using NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL)
+    return process.env.NEXT_PUBLIC_BASE_URL
+  }
+  
+  // Default fallback for local development
+  console.log('Using localhost fallback')
+  return 'http://localhost:3000'
+}
+
 // Gmail API configuration
 const oauth2Client = new google.auth.OAuth2(
   process.env.GMAIL_CLIENT_ID,
@@ -191,11 +220,10 @@ export async function sendPasswordResetEmail(
       return false
     }
     
-    // Use production URL if NODE_ENV is production, otherwise use local
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://suryayoga.ge'
-      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    // Use centralized base URL function
+    const baseUrl = getBaseUrl()
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}`
+    console.log('Generated password reset link:', resetLink)
     
     const subject = language === 'ge' 
       ? 'პაროლის აღდგენა - სურია იოგა'
@@ -352,11 +380,10 @@ export async function sendVerificationEmail(
       return false
     }
     
-    // Use production URL if NODE_ENV is production, otherwise use local
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://suryayoga.ge'
-      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    // Use centralized base URL function
+    const baseUrl = getBaseUrl()
     const verificationLink = `${baseUrl}/api/verify-email?token=${verificationToken}`
+    console.log('Generated verification link:', verificationLink)
     
     const subject = language === 'ge' 
       ? 'დაადასტურეთ თქვენი სურია იოგას ანგარიში'
