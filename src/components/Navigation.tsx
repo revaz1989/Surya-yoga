@@ -83,13 +83,13 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="bg-white/90 backdrop-blur-sm shadow-lg sticky top-0 z-50">
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <img src="/gallery/Logo.jpg" alt="Surya Yoga" className="h-10 w-10 rounded-full" />
-            <span className="font-bold text-xl text-sun-600">{t.nav.logo}</span>
+            <span className="font-bold text-xl text-black">{t.nav.logo}</span>
           </Link>
           
           {/* Desktop Navigation */}
@@ -98,7 +98,7 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-earth-700 hover:text-sun-500 transition-colors font-medium"
+                className="text-black hover:text-sun-500 transition-colors font-medium"
               >
                 {item.label}
               </Link>
@@ -121,7 +121,7 @@ export default function Navigation() {
                   className="flex items-center space-x-2 px-3 py-1 rounded-full border border-sun-500 hover:bg-sun-50 transition-colors"
                 >
                   <User className="w-4 h-4 text-sun-600" />
-                  <span className="text-sun-700 font-medium">{user.username}</span>
+                  <span className="text-black font-medium">{user.username}</span>
                 </button>
                 
                 {showUserMenu && (
@@ -143,7 +143,7 @@ export default function Navigation() {
               <div className="flex space-x-2">
                 <Link
                   href="/login"
-                  className="text-earth-700 hover:text-sun-500 transition-colors font-medium border border-sun-500 px-3 py-1 rounded-full hover:bg-sun-50"
+                  className="text-black hover:text-sun-500 transition-colors font-medium border border-sun-500 px-3 py-1 rounded-full hover:bg-sun-50"
                 >
                   {language === 'ge' ? 'შესვლა' : 'Login'}
                 </Link>
@@ -181,7 +181,7 @@ export default function Navigation() {
             </button>
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="p-2 rounded-md text-earth-700 hover:text-sun-500 hover:bg-sun-50 transition-colors"
+              className="p-2 rounded-md text-black hover:text-sun-500 hover:bg-sun-50 transition-colors"
             >
               {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

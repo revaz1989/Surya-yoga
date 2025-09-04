@@ -40,13 +40,13 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/schedule"
-              className="px-6 py-3 bg-white text-sun-600 rounded-full font-semibold hover:bg-sun-50 transition-colors"
+              className="px-8 py-4 bg-white text-black rounded-full font-semibold hover:bg-gray-50 transition-colors shadow-lg min-w-[160px] text-center"
             >
-              {t.home.ctaSchedule} <ArrowRight className="inline w-4 h-4 ml-2" />
+              {t.home.ctaSchedule}
             </Link>
             <Link
               href="/pricing"
-              className="px-6 py-3 bg-sun-600 text-white rounded-full font-semibold hover:bg-sun-700 transition-colors"
+              className="px-8 py-4 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition-colors shadow-lg min-w-[160px] text-center"
             >
               {t.home.ctaPricing}
             </Link>
