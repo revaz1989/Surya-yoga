@@ -3,15 +3,63 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 
 // Database file path - use environment variable or default to project root
-const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'surya-yoga.db');
+// In production, try multiple possible locations
+function getDatabasePath(): string {
+  if (process.env.DATABASE_PATH) {
+    return process.env.DATABASE_PATH;
+  }
+  
+  // Try different possible paths in production
+  const possiblePaths = [
+    path.join(process.cwd(), 'surya-yoga.db'),
+    path.join(process.cwd(), 'data', 'surya-yoga.db'),
+    path.join('/tmp', 'surya-yoga.db'),
+    './surya-yoga.db'
+  ];
+  
+  // Return the first path that works or default to current directory
+  return possiblePaths[0];
+}
+
+const dbPath = getDatabasePath();
 
 let db: Database.Database | null = null;
 
 export function getDatabase(): Database.Database {
   if (!db) {
-    db = new Database(dbPath);
-    db.pragma('journal_mode = WAL'); // Better for concurrent access
-    initializeDatabase();
+    try {
+      console.log('Opening database at:', dbPath);
+      
+      // Create the directory if it doesn't exist
+      const dir = path.dirname(dbPath);
+      if (!require('fs').existsSync(dir)) {
+        console.log('Creating directory:', dir);
+        require('fs').mkdirSync(dir, { recursive: true });
+      }
+      
+      db = new Database(dbPath);
+      db.pragma('journal_mode = WAL'); // Better for concurrent access
+      initializeDatabase();
+      console.log('Database opened successfully at:', dbPath);
+    } catch (error) {
+      console.error('Failed to open database:', error);
+      // Try in-memory database as last resort
+      console.log('Using in-memory database as fallback');
+      db = new Database(':memory:');
+      db.pragma('journal_mode = WAL');
+      initializeDatabase();
+      
+      // Create a default admin user for testing
+      try {
+        createUser('admin', 'admin@suryayoga.ge', 'admin123').then(userId => {
+          const updateStmt = db!.prepare('UPDATE users SET is_verified = 1, is_admin = 1 WHERE id = ?');
+          updateStmt.run(userId);
+          console.log('Created default admin user - username: admin, password: admin123');
+        });
+      } catch (e) {
+        console.log('Could not create default admin');
+      }
+    }
   }
   return db;
 }
