@@ -13,8 +13,7 @@
     "build:production": "node scripts/build-production.js",
     "start:production": "node scripts/start-production.js",
     "production": "npm run build:production && npm run start:production",
-    "migrate-uploads": "node scripts/migrate-uploads.js",
-    "test-media": "node scripts/test-media-serving.js"
+    "migrate-uploads": "node scripts/migrate-uploads.js"
   },
   "engines": {
     "node": ">=18.0.0"
