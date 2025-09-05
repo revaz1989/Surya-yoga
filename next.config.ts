@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // Uncomment the following lines when building for static export:
   // output: 'export',
   // trailingSlash: true,
+  
   images: {
     unoptimized: true,
     domains: ['suryayoga.ge', 'www.suryayoga.ge'],

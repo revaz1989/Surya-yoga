@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_OPTIONS='--max-http-header-size=80000' next start",
     "lint": "next lint",
     "seed": "node -r ts-node/register scripts/seed.js",
     "setup-gmail": "node scripts/setup-gmail-oauth.js",
