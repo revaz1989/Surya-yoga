@@ -10,21 +10,16 @@ function getBaseUrl(): string {
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL
   })
   
-  // In production, always use suryayoga.ge
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Using production URL: https://suryayoga.ge')
-    return 'https://suryayoga.ge'
-  }
-  
-  // In development or if NEXT_PUBLIC_BASE_URL is explicitly set
+  // Use NEXT_PUBLIC_BASE_URL if set (this should be https://suryayoga.ge in production)
   if (process.env.NEXT_PUBLIC_BASE_URL) {
-    // If it's set to suryayoga.ge, use it (for production builds)
-    if (process.env.NEXT_PUBLIC_BASE_URL.includes('suryayoga.ge')) {
-      console.log('NEXT_PUBLIC_BASE_URL contains suryayoga.ge, using https://suryayoga.ge')
-      return 'https://suryayoga.ge'
-    }
     console.log('Using NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL)
     return process.env.NEXT_PUBLIC_BASE_URL
+  }
+  
+  // Fallback to production URL if NODE_ENV is production but NEXT_PUBLIC_BASE_URL is not set
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Production mode without NEXT_PUBLIC_BASE_URL, using: https://suryayoga.ge')
+    return 'https://suryayoga.ge'
   }
   
   // Default fallback for local development

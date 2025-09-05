@@ -87,8 +87,12 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(filepath, buffer)
 
-    // Return the API URL for serving the media file
-    const publicUrl = `/api/media/news/${filename}`
+    // Return URL that matches nginx configuration
+    // In production, nginx serves /uploads directly from /var/lib/suryayoga/uploads
+    // In development, we'll fall back to the API route
+    const publicUrl = process.env.NODE_ENV === 'production' 
+      ? `/uploads/news/${filename}`
+      : `/api/media/news/${filename}`
 
     return NextResponse.json({
       success: true,

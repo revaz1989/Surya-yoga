@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/translations'
-import { Calendar, Clock, User, ChevronRight, Heart, MessageCircle, Share2, Play, Image as ImageIcon } from 'lucide-react'
+import { Calendar, Clock, User, ChevronRight, ChevronLeft, Heart, MessageCircle, Share2, Play, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -83,17 +83,29 @@ export default function NewsPage() {
 
   const getMediaFiles = (post: NewsPost): string[] => {
     if (!post.media_files) return []
+    if (post.media_files === '[]') return []
     try {
-      const parsed = JSON.parse(post.media_files)
+      let parsed = JSON.parse(post.media_files)
+      // Handle double-encoded JSON strings
+      if (typeof parsed === 'string') {
+        try {
+          parsed = JSON.parse(parsed)
+        } catch (e) {
+          // If second parse fails, treat the first parsed string as a single file
+          return parsed.trim() ? [parsed] : []
+        }
+      }
+      
       // Ensure we always return an array
       if (Array.isArray(parsed)) {
-        return parsed
-      } else {
+        return parsed.filter(file => file && typeof file === 'string' && file.trim() !== '')
+      } else if (parsed && typeof parsed === 'string') {
         // If it's a single item, wrap it in an array
         return [parsed]
       }
+      return []
     } catch (e) {
-      console.error('Error parsing media files:', e)
+      console.error('Error parsing media files:', e, 'Raw:', post.media_files)
       return []
     }
   }
@@ -101,6 +113,87 @@ export default function NewsPage() {
   const isVideo = (filename: string) => {
     const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
     return videoExtensions.some(ext => filename.toLowerCase().includes(ext))
+  }
+
+  // Media Carousel Component
+  const MediaCarousel = ({ files }: { files: string[] }) => {
+    const [currentIndex, setCurrentIndex] = useState(0)
+
+    const nextSlide = () => {
+      setCurrentIndex((prev) => (prev + 1) % files.length)
+    }
+
+    const prevSlide = () => {
+      setCurrentIndex((prev) => (prev - 1 + files.length) % files.length)
+    }
+
+    if (files.length === 0) return null
+
+    return (
+      <div className="relative">
+        {/* Main Media Display */}
+        <div className="relative w-full rounded-lg overflow-hidden bg-earth-100" style={{ aspectRatio: '16/10' }}>
+          {isVideo(files[currentIndex]) ? (
+            <div className="w-full h-full bg-earth-200 flex items-center justify-center">
+              <Play className="w-12 h-12 text-earth-500" />
+            </div>
+          ) : (
+            <img
+              src={files[currentIndex]}
+              alt={`Media ${currentIndex + 1}`}
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                console.log('Carousel image failed to load:', files[currentIndex]);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          
+          {/* Navigation Arrows - only show if more than 1 file */}
+          {files.length > 1 && (
+            <>
+              <button
+                onClick={prevSlide}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={nextSlide}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </>
+          )}
+          
+          {/* Dots indicator - only show if more than 1 file */}
+          {files.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+              {files.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Counter - only show if more than 1 file */}
+        {files.length > 1 && (
+          <div className="text-center mt-2 text-sm text-earth-600">
+            {currentIndex + 1} / {files.length}
+          </div>
+        )}
+      </div>
+    )
   }
 
   const handleLike = (postId: number) => {
@@ -185,8 +278,7 @@ export default function NewsPage() {
               // Ensure mediaFiles is always an array
               const safeMediaFiles = Array.isArray(mediaFiles) ? mediaFiles : []
               return (
-                <Link key={post.id} href={`/news/${post.id}`}>
-                  <article className="bg-white rounded-lg card-shadow border border-earth-200 cursor-pointer hover:shadow-lg transition-shadow mb-8">
+                <article key={post.id} className="bg-sun-50 rounded-lg card-shadow border border-earth-200 hover:shadow-lg transition-shadow mb-8">
                   {/* Post Header */}
                   <div className="p-4 pb-0">
                     <div className="flex items-center gap-3 mb-4">
@@ -220,7 +312,7 @@ export default function NewsPage() {
                         src={post.featured_image}
                         alt={getTitle(post)}
                         fill
-                        className="object-cover"
+                        className="object-contain bg-earth-100"
                       />
                     </div>
                   )}
@@ -228,60 +320,7 @@ export default function NewsPage() {
                   {/* Media Gallery Preview */}
                   {safeMediaFiles.length > 0 && (
                     <div className="px-4 py-3">
-                      {safeMediaFiles.length === 1 ? (
-                        // Single media file - show larger
-                        <div className="relative w-full rounded-lg overflow-hidden" style={{ aspectRatio: '16/10' }}>
-                          {isVideo(safeMediaFiles[0]) ? (
-                            <div className="w-full h-full bg-earth-200 flex items-center justify-center">
-                              <Play className="w-12 h-12 text-earth-500" />
-                            </div>
-                          ) : (
-                            <img
-                              src={safeMediaFiles[0]}
-                              alt="Media"
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                console.log('News page image failed to load:', safeMediaFiles[0]);
-                                const parent = e.currentTarget.parentElement?.parentElement;
-                                if (parent) parent.style.display = 'none';
-                              }}
-                              onLoad={() => {}}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        // Multiple media files - show grid
-                        <div className="grid grid-cols-2 gap-3">
-                          {safeMediaFiles.slice(0, 4).map((file, index) => (
-                            <div key={index} className="relative rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                              {isVideo(file) ? (
-                                <div className="w-full h-full bg-earth-200 flex items-center justify-center">
-                                  <Play className="w-6 h-6 text-earth-500" />
-                                </div>
-                              ) : (
-                                <img
-                                  src={file}
-                                  alt={`Media ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    console.log('Grid image failed to load:', file);
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) parent.style.display = 'none';
-                                  }}
-                                  onLoad={() => {}}
-                                />
-                              )}
-                              {index === 3 && safeMediaFiles.length > 4 && (
-                                <div className="absolute inset-0 bg-earth-800/70 flex items-center justify-center">
-                                  <span className="text-white font-semibold">
-                                    +{safeMediaFiles.length - 4}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      <MediaCarousel files={safeMediaFiles} />
                     </div>
                   )}
 
@@ -308,12 +347,8 @@ export default function NewsPage() {
                           />
                           <span className="text-sm font-medium">{language === 'ge' ? 'მოწონება' : 'Like'}</span>
                         </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            window.location.href = `/news/${post.id}`
-                          }}
+                        <Link
+                          href={`/news/${post.id}`}
                           className="flex items-center gap-2 text-black hover:text-blue-600 transition-colors"
                           style={{ color: '#000000' }}
                         >
@@ -324,7 +359,7 @@ export default function NewsPage() {
                               <span className="ml-1">({post.comment_count})</span>
                             )}
                           </span>
-                        </button>
+                        </Link>
                         <button 
                           onClick={(e) => {
                             e.preventDefault()
@@ -338,13 +373,16 @@ export default function NewsPage() {
                           <span className="text-sm font-medium">{language === 'ge' ? 'გაზიარება' : 'Share'}</span>
                         </button>
                       </div>
-                      <span className="text-black hover:text-orange-600 font-bold text-sm" style={{ color: '#000000' }}>
+                      <Link 
+                        href={`/news/${post.id}`}
+                        className="text-black hover:text-orange-600 font-bold text-sm transition-colors"
+                        style={{ color: '#000000' }}
+                      >
                         {language === 'ge' ? 'სრულად წაკითხვა' : 'Read more'}
-                      </span>
+                      </Link>
                     </div>
                   </div>
-                  </article>
-                </Link>
+                </article>
               )
             })}
           </div>

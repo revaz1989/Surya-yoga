@@ -152,6 +152,37 @@ function initializeDatabase() {
   `);
 
   console.log('Database initialized successfully');
+  
+  // Create default admin user if it doesn't exist
+  seedDefaultAdmin();
+}
+
+async function seedDefaultAdmin() {
+  if (!db) return;
+  
+  try {
+    // Check if admin user already exists
+    const existingAdmin = db.prepare('SELECT * FROM users WHERE email = ?').get('revazdavitashvili@gmail.com');
+    
+    if (!existingAdmin) {
+      console.log('Creating default admin user...');
+      
+      // Create the admin user
+      const userId = await createUser('Surya', 'revazdavitashvili@gmail.com', 'Apolon1989!(*(');
+      
+      // Update user to be admin and verified
+      const updateStmt = db.prepare('UPDATE users SET is_verified = 1, is_admin = 1 WHERE id = ?');
+      updateStmt.run(userId);
+      
+      console.log('Default admin user created successfully');
+      console.log('Username: Surya');
+      console.log('Email: revazdavitashvili@gmail.com');
+    } else {
+      console.log('Admin user already exists');
+    }
+  } catch (error) {
+    console.error('Failed to create default admin user:', error);
+  }
 }
 
 // User management functions

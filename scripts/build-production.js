@@ -3,7 +3,9 @@
 // Set production environment
 process.env.NODE_ENV = 'production';
 
-// Load production environment variables
+// Load ONLY production environment variables
+// Clear any existing env vars from .env.local
+delete process.env.NEXT_PUBLIC_BASE_URL;
 require('dotenv').config({ path: '.env.production' });
 
 console.log('Building for production with environment variables:');

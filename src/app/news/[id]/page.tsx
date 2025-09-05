@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/translations'
-import { Calendar, User, ArrowLeft, Share2, MessageCircle, Send, Trash2 } from 'lucide-react'
+import { Calendar, User, ArrowLeft, Share2, MessageCircle, Send, Trash2, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -75,18 +75,31 @@ export default function NewsPostPage() {
       const data = await response.json()
       if (data.success) {
         setPost(data.post)
-        if (data.post.media_files) {
+        if (data.post.media_files && data.post.media_files !== '[]') {
           try {
-            const parsedFiles = JSON.parse(data.post.media_files)
+            let parsedFiles = JSON.parse(data.post.media_files)
+            // Handle double-encoded JSON strings
+            if (typeof parsedFiles === 'string') {
+              try {
+                parsedFiles = JSON.parse(parsedFiles)
+              } catch (e) {
+                // If second parse fails, treat the first parsed string as a single file
+                setMediaFiles(parsedFiles.trim() ? [parsedFiles] : [])
+                return
+              }
+            }
+            
             // Ensure we always have an array
             if (Array.isArray(parsedFiles)) {
-              setMediaFiles(parsedFiles)
-            } else {
+              setMediaFiles(parsedFiles.filter(file => file && typeof file === 'string' && file.trim() !== ''))
+            } else if (parsedFiles && typeof parsedFiles === 'string') {
               // If it's a single item, wrap it in an array
               setMediaFiles([parsedFiles])
+            } else {
+              setMediaFiles([])
             }
           } catch (e) {
-            console.error('Error parsing media files on detail page:', e)
+            console.error('Error parsing media files on detail page:', e, 'Raw:', data.post.media_files)
             setMediaFiles([])
           }
         } else {
@@ -199,6 +212,98 @@ export default function NewsPostPage() {
     return videoExtensions.some(ext => filename.toLowerCase().includes(ext))
   }
 
+  // Media Carousel Component
+  const MediaCarousel = ({ files }: { files: string[] }) => {
+    const [currentIndex, setCurrentIndex] = useState(0)
+
+    const nextSlide = () => {
+      setCurrentIndex((prev) => (prev + 1) % files.length)
+    }
+
+    const prevSlide = () => {
+      setCurrentIndex((prev) => (prev - 1 + files.length) % files.length)
+    }
+
+    if (files.length === 0) return null
+
+    return (
+      <div className="relative">
+        {/* Main Media Display */}
+        <div 
+          className="relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden card-shadow border border-earth-200 bg-earth-100 cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => setSelectedImage(files[currentIndex])}
+        >
+          {isVideo(files[currentIndex]) ? (
+            <video 
+              controls 
+              className="w-full h-auto"
+              preload="metadata"
+            >
+              <source src={files[currentIndex]} />
+              {language === 'ge' 
+                ? 'თქვენი ბრაუზერი არ აწყობს ვიდეო ფორმატს'
+                : 'Your browser does not support the video format'
+              }
+            </video>
+          ) : (
+            <img
+              src={files[currentIndex]}
+              alt={`Media ${currentIndex + 1}`}
+              className="w-full h-auto object-contain"
+              onError={(e) => {
+                console.log('Carousel image failed to load:', files[currentIndex]);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          
+          {/* Navigation Arrows - only show if more than 1 file */}
+          {files.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </>
+          )}
+          
+          {/* Dots indicator - only show if more than 1 file */}
+          {files.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+              {files.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => { e.stopPropagation(); setCurrentIndex(index); }}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Counter - only show if more than 1 file */}
+        {files.length > 1 && (
+          <div className="text-center mt-2 text-sm text-earth-600">
+            {currentIndex + 1} / {files.length}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -277,14 +382,14 @@ export default function NewsPostPage() {
           {/* Featured Image */}
           {post.featured_image && (
             <div 
-              className="relative h-64 md:h-96 rounded-lg overflow-hidden mb-8 cursor-pointer hover:opacity-90 transition-opacity"
+              className="relative h-64 md:h-96 rounded-lg overflow-hidden mb-8 cursor-pointer hover:opacity-90 transition-opacity bg-earth-100"
               onClick={() => setSelectedImage(post.featured_image!)}
             >
               <Image
                 src={post.featured_image}
                 alt={getTitle(post)}
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>
@@ -308,45 +413,7 @@ export default function NewsPostPage() {
             <h3 className="text-xl font-semibold text-black mb-6 text-center" style={{ color: '#000000', opacity: 1 }}>
               {language === 'ge' ? 'მედია ფაილები' : 'Media Files'}
             </h3>
-            <div className="flex flex-col items-center gap-8">
-              {Array.isArray(mediaFiles) && mediaFiles.map((file, index) => (
-                <div key={index} className="w-full max-w-2xl mx-auto rounded-lg overflow-hidden card-shadow border border-earth-200">
-                  {isVideo(file) ? (
-                    <video 
-                      controls 
-                      className="w-full h-auto"
-                      preload="metadata"
-                    >
-                      <source src={file} />
-                      {language === 'ge' 
-                        ? 'თქვენი ბრაუზერი არ აწყობს ვიდეო ფორმატს'
-                        : 'Your browser does not support the video format'
-                      }
-                    </video>
-                  ) : (
-                    <div 
-                      className="relative w-full bg-gray-100 border-2 border-gray-300 cursor-pointer hover:opacity-90 transition-opacity" 
-                      style={{ aspectRatio: '16/10' }}
-                      onClick={() => setSelectedImage(file)}
-                    >
-                      <img
-                        src={file}
-                        alt={`Media ${index + 1}`}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          console.log('Image failed to load:', file);
-                          const parent = e.currentTarget.parentElement;
-                          if (parent) parent.style.display = 'none';
-                        }}
-                        onLoad={(e) => {
-                          console.log('Image loaded successfully:', file);
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <MediaCarousel files={mediaFiles} />
           </div>
         )}
 
