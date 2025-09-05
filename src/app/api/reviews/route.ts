@@ -34,14 +34,14 @@ export async function POST(request: NextRequest) {
     const { session } = authResult
     const body = await request.json()
     
-    const { rating, title, content, language = 'en' } = body
+    const { rating, title = '', content, language = 'en' } = body
 
     // Validation
-    if (!rating || !title || !content) {
+    if (!rating || !content) {
       return NextResponse.json(
         { error: language === 'ge' 
-          ? 'რეიტინგი, სათაური და შინაარსი აუცილებელია' 
-          : 'Rating, title, and content are required' 
+          ? 'რეიტინგი და შინაარსი აუცილებელია' 
+          : 'Rating and content are required' 
         },
         { status: 400 }
       )
@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (title.length < 3 || title.length > 100) {
+    // Title is optional, only validate if provided
+    if (title && title.length > 0 && (title.length < 3 || title.length > 100)) {
       return NextResponse.json(
         { error: language === 'ge' 
           ? 'სათაური უნდა იყოს 3-100 სიმბოლო' 
@@ -78,7 +79,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create review (requires approval by default)
-    const reviewId = createReview(session.userId, rating, title, content, language)
+    // Use empty string for title if not provided
+    const reviewId = createReview(session.userId, rating, title || '', content, language)
     
     console.log(`Review created with ID ${reviewId} by user ${session.userId}`)
 

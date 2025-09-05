@@ -129,10 +129,10 @@ export default function ReviewsPage() {
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || reviewForm.rating === 0 || !reviewForm.title.trim() || !reviewForm.content.trim()) {
+    if (!user || reviewForm.rating === 0 || !reviewForm.content.trim()) {
       setMessage(language === 'ge' 
-        ? 'გთხოვთ შეავსოთ ყველა ველი და აირჩიოთ რეიტინგი' 
-        : 'Please fill all fields and select a rating'
+        ? 'გთხოვთ შეავსოთ ტექსტი და აირჩიოთ რეიტინგი' 
+        : 'Please write a review and select a rating'
       )
       return
     }
@@ -279,14 +279,14 @@ export default function ReviewsPage() {
               
               <div>
                 <label className="block text-earth-700 mb-2">
-                  {language === 'ge' ? 'სათაური' : 'Title'}
+                  {language === 'ge' ? 'სათაური (არასავალდებულო)' : 'Title (Optional)'}
                 </label>
                 <input
                   type="text"
                   value={reviewForm.title}
                   onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
                   className="w-full px-4 py-2 border border-earth-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sun-500"
-                  placeholder={language === 'ge' ? 'რეცენზიის სათაური' : 'Review title'}
+                  placeholder={language === 'ge' ? 'რეცენზიის სათაური (არასავალდებულო)' : 'Review title (optional)'}
                   maxLength={100}
                 />
               </div>
@@ -353,7 +353,7 @@ export default function ReviewsPage() {
                     <div className="flex gap-1 mb-2">
                       {renderStars(review.rating)}
                     </div>
-                    <h4 className="font-medium text-earth-800 mb-2">{review.title}</h4>
+                    {review.title && <h4 className="font-medium text-earth-800 mb-2">{review.title}</h4>}
                     <p className="text-earth-700">{review.content}</p>
                   </div>
                 </div>

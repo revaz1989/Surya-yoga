@@ -107,10 +107,9 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // Create uploads directory if it doesn't exist
-    // Use environment-specific upload directory
-    const baseUploadDir = process.env.UPLOAD_DIR 
-      ? process.env.UPLOAD_DIR
-      : join(process.cwd(), 'public', 'uploads')
+    // In production, use public/uploads to ensure Next.js can serve the files
+    // This will be in the Next.js build output directory
+    const baseUploadDir = join(process.cwd(), 'public', 'uploads')
     const newsDir = join(baseUploadDir, 'news')
     
     if (!existsSync(baseUploadDir)) {
@@ -130,12 +129,9 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(filepath, buffer)
 
-    // Return URL that matches nginx configuration
-    // In production, nginx serves /uploads directly from /var/lib/suryayoga/uploads
-    // In development, we'll fall back to the API route
-    const publicUrl = process.env.NODE_ENV === 'production' 
-      ? `/uploads/news/${filename}`
-      : `/api/media/news/${filename}`
+    // Return URL for the uploaded file
+    // Files are stored in public/uploads and served directly by Next.js
+    const publicUrl = `/uploads/news/${filename}`
 
     return NextResponse.json({
       success: true,
