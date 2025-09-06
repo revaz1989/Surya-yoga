@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/translations'
+import { getMediaUrl, parseMediaFiles, isVideoFile } from '@/lib/media'
 import { Calendar, User, ArrowLeft, Share2, MessageCircle, Send, Trash2, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -75,36 +76,9 @@ export default function NewsPostPage() {
       const data = await response.json()
       if (data.success) {
         setPost(data.post)
-        if (data.post.media_files && data.post.media_files !== '[]') {
-          try {
-            let parsedFiles = JSON.parse(data.post.media_files)
-            // Handle double-encoded JSON strings
-            if (typeof parsedFiles === 'string') {
-              try {
-                parsedFiles = JSON.parse(parsedFiles)
-              } catch (e) {
-                // If second parse fails, treat the first parsed string as a single file
-                setMediaFiles(parsedFiles.trim() ? [parsedFiles] : [])
-                return
-              }
-            }
-            
-            // Ensure we always have an array
-            if (Array.isArray(parsedFiles)) {
-              setMediaFiles(parsedFiles.filter(file => file && typeof file === 'string' && file.trim() !== ''))
-            } else if (parsedFiles && typeof parsedFiles === 'string') {
-              // If it's a single item, wrap it in an array
-              setMediaFiles([parsedFiles])
-            } else {
-              setMediaFiles([])
-            }
-          } catch (e) {
-            console.error('Error parsing media files on detail page:', e, 'Raw:', data.post.media_files)
-            setMediaFiles([])
-          }
-        } else {
-          setMediaFiles([])
-        }
+        // Use the media helper function to parse and get proper URLs
+        const files = parseMediaFiles(data.post.media_files)
+        setMediaFiles(files)
       }
     } catch (error) {
       console.error('Failed to fetch news post:', error)
@@ -207,10 +181,6 @@ export default function NewsPostPage() {
     }
   }
 
-  const isVideo = (filename: string) => {
-    const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
-    return videoExtensions.some(ext => filename.toLowerCase().includes(ext))
-  }
 
   // Media Carousel Component
   const MediaCarousel = ({ files }: { files: string[] }) => {
@@ -233,7 +203,7 @@ export default function NewsPostPage() {
           className="relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden card-shadow border border-earth-200 bg-earth-100 cursor-pointer hover:opacity-90 transition-opacity"
           onClick={() => setSelectedImage(files[currentIndex])}
         >
-          {isVideo(files[currentIndex]) ? (
+          {isVideoFile(files[currentIndex]) ? (
             <video 
               controls 
               className="w-full h-auto"
@@ -383,10 +353,10 @@ export default function NewsPostPage() {
           {post.featured_image && (
             <div 
               className="relative h-64 md:h-96 rounded-lg overflow-hidden mb-8 cursor-pointer hover:opacity-90 transition-opacity bg-earth-100"
-              onClick={() => setSelectedImage(post.featured_image!)}
+              onClick={() => setSelectedImage(getMediaUrl(post.featured_image))}
             >
               <Image
-                src={post.featured_image}
+                src={getMediaUrl(post.featured_image)}
                 alt={getTitle(post)}
                 fill
                 className="object-contain"

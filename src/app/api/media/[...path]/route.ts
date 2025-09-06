@@ -14,7 +14,7 @@ export async function GET(
     // Use environment-specific upload directory
     const uploadsDir = process.env.UPLOAD_DIR 
       ? process.env.UPLOAD_DIR
-      : join(process.cwd(), 'public', 'uploads')
+      : join(process.cwd(), 'uploads')
     
     const filePath = join(uploadsDir, ...path)
     
@@ -28,9 +28,11 @@ export async function GET(
 
     // Check if file exists
     if (!existsSync(filePath)) {
-      console.log('File not found:', filePath)
+      console.error('File not found:', filePath)
+      console.error('Upload directory:', uploadsDir)
+      console.error('Requested path:', path)
       return NextResponse.json(
-        { error: 'File not found' },
+        { error: 'File not found', details: { uploadsDir, requestedPath: path.join('/') } },
         { status: 404 }
       )
     }

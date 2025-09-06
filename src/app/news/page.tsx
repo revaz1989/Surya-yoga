@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/translations'
+import { getMediaUrl, parseMediaFiles, isVideoFile } from '@/lib/media'
 import { Calendar, Clock, User, ChevronRight, ChevronLeft, Heart, MessageCircle, Share2, Play, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -82,37 +83,7 @@ export default function NewsPage() {
   }
 
   const getMediaFiles = (post: NewsPost): string[] => {
-    if (!post.media_files) return []
-    if (post.media_files === '[]') return []
-    try {
-      let parsed = JSON.parse(post.media_files)
-      // Handle double-encoded JSON strings
-      if (typeof parsed === 'string') {
-        try {
-          parsed = JSON.parse(parsed)
-        } catch (e) {
-          // If second parse fails, treat the first parsed string as a single file
-          return parsed.trim() ? [parsed] : []
-        }
-      }
-      
-      // Ensure we always return an array
-      if (Array.isArray(parsed)) {
-        return parsed.filter(file => file && typeof file === 'string' && file.trim() !== '')
-      } else if (parsed && typeof parsed === 'string') {
-        // If it's a single item, wrap it in an array
-        return [parsed]
-      }
-      return []
-    } catch (e) {
-      console.error('Error parsing media files:', e, 'Raw:', post.media_files)
-      return []
-    }
-  }
-
-  const isVideo = (filename: string) => {
-    const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
-    return videoExtensions.some(ext => filename.toLowerCase().includes(ext))
+    return parseMediaFiles(post.media_files)
   }
 
   // Media Carousel Component
@@ -133,7 +104,7 @@ export default function NewsPage() {
       <div className="relative">
         {/* Main Media Display */}
         <div className="relative w-full rounded-lg overflow-hidden bg-earth-100" style={{ aspectRatio: '16/10' }}>
-          {isVideo(files[currentIndex]) ? (
+          {isVideoFile(files[currentIndex]) ? (
             <div className="w-full h-full bg-earth-200 flex items-center justify-center">
               <Play className="w-12 h-12 text-earth-500" />
             </div>
@@ -309,7 +280,7 @@ export default function NewsPage() {
                   {post.featured_image && (
                     <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
                       <Image
-                        src={post.featured_image}
+                        src={getMediaUrl(post.featured_image)}
                         alt={getTitle(post)}
                         fill
                         className="object-contain bg-earth-100"
