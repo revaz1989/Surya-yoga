@@ -7,31 +7,20 @@ import { getUserById } from '@/lib/database'
 
 // Configure API route to handle larger files
 export const runtime = 'nodejs'
-export const maxDuration = 30 // 30 seconds timeout
+export const maxDuration = 60 // 60 seconds timeout for large uploads
 
-// This doesn't work in App Router, but we'll handle size limits in our code
-// export const bodyParser = {
-//   sizeLimit: '50mb',
-// }
+// Remove body size limits - accepting all file sizes
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '2gb', // Effectively unlimited
+    },
+  },
+}
 
 export async function POST(request: NextRequest) {
   try {
-    // Handle potential body size errors early
-    const contentLength = request.headers.get('content-length')
-    if (contentLength) {
-      const size = parseInt(contentLength)
-      const maxSize = process.env.MAX_FILE_SIZE 
-        ? parseInt(process.env.MAX_FILE_SIZE) 
-        : 50 * 1024 * 1024 // 50MB
-      
-      if (size > maxSize) {
-        const maxSizeMB = Math.round(maxSize / (1024 * 1024))
-        return NextResponse.json(
-          { error: `Request too large. Maximum size is ${maxSizeMB}MB` },
-          { status: 413 }
-        )
-      }
-    }
+    // No file size restrictions - removed size checking
     
     const session = getSessionFromRequest(request)
     
@@ -56,13 +45,8 @@ export async function POST(request: NextRequest) {
       data = await request.formData()
     } catch (error: any) {
       console.error('FormData parsing error:', error)
-      // This likely means the request body was too large for Next.js to parse
-      if (error.message?.includes('body') || error.message?.includes('size') || error.message?.includes('large')) {
-        return NextResponse.json(
-          { error: 'File too large. Maximum size is 50MB' },
-          { status: 413 }
-        )
-      }
+      // Log the error but don't restrict based on size
+      console.log('FormData parsing issue (size restrictions removed):', error.message)
       return NextResponse.json(
         { error: 'Invalid request format' },
         { status: 400 }
@@ -78,17 +62,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check file size (configurable via environment or default 50MB)
-    const maxSize = process.env.MAX_FILE_SIZE 
-      ? parseInt(process.env.MAX_FILE_SIZE) 
-      : 50 * 1024 * 1024 // 50MB
-    if (file.size > maxSize) {
-      const maxSizeMB = Math.round(maxSize / (1024 * 1024))
-      return NextResponse.json(
-        { error: `File too large. Maximum size is ${maxSizeMB}MB` },
-        { status: 400 }
-      )
-    }
+    // No file size restrictions - accepting all file sizes
 
     // Check file type
     const allowedTypes = [

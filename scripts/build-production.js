@@ -13,6 +13,17 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL);
 console.log();
 
+// Run database migration first
+console.log('Running database migrations...');
+const { execSync } = require('child_process');
+try {
+  execSync('node scripts/add-google-id-column.js', { stdio: 'inherit' });
+  console.log('Database migrations completed');
+} catch (error) {
+  console.error('Database migration failed:', error.message);
+  // Continue with build even if migration fails (might already be applied)
+}
+
 // Run Next.js build
 const { spawn } = require('child_process');
 

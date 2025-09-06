@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/translations'
 import { Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
+import GoogleSignIn from '@/components/GoogleSignIn'
 
 export default function LoginPage() {
   const { language } = useLanguage()
@@ -121,6 +122,19 @@ export default function LoginPage() {
             </div>
           )}
           
+          <GoogleSignIn 
+            onSuccess={() => setMessage(language === 'ge' ? 'წარმატებით შეხვედით!' : 'Successfully signed in!')}
+            onError={(error) => setMessage(error)}
+          />
+          
+          <div className="relative flex items-center justify-center my-6">
+            <div className="border-t border-earth-200 w-full"></div>
+            <span className="bg-white px-4 text-earth-500 text-sm">
+              {language === 'ge' ? 'ან' : 'or'}
+            </span>
+            <div className="border-t border-earth-200 w-full"></div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-earth-700 mb-2">

@@ -88,6 +88,13 @@ function initializeDatabase() {
     // Column already exists, ignore error
   }
 
+  // Add google_id column if it doesn't exist (for Google OAuth users)
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN google_id TEXT');
+  } catch (error) {
+    // Column already exists, ignore error
+  }
+
   // Reviews table
   db.exec(`
     CREATE TABLE IF NOT EXISTS reviews (
@@ -195,6 +202,7 @@ export interface User {
   is_verified: number;
   created_at: string;
   updated_at: string;
+  google_id?: string;
 }
 
 export interface Review {

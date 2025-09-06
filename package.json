@@ -9,6 +9,7 @@
     "lint": "next lint",
     "seed": "node -r ts-node/register scripts/seed.js",
     "setup-gmail": "node scripts/setup-gmail-oauth.js",
+    "migrate-google": "node scripts/add-google-id-column.js",
     "health": "curl http://localhost:3000/api/health",
     "build:production": "node scripts/build-production.js",
     "start:production": "node scripts/start-production.js",
